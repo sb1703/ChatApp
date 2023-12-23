@@ -108,9 +108,18 @@ class RepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchChats(request: ApiRequest): Flow<PagingData<Message>> {
+//    override suspend fun fetchChats(request: ApiRequest): Flow<PagingData<Message>> {
+//        Log.d("chatContentDebug","repo")
+//        return remote.fetchChats(request = request)
+//    }
+
+    override suspend fun fetchChats(request: ApiRequest): ApiResponse {
         Log.d("chatContentDebug","repo")
-        return remote.fetchChats(request = request)
+        return try {
+            ktorApi.fetchChats(request = request)
+        } catch (e: Exception) {
+            ApiResponse(success = false, error = e)
+        }
     }
 
     override suspend fun fetchLastChat(request: ApiRequest): ApiResponse {

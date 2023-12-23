@@ -45,45 +45,79 @@ import com.example.chatapp.domain.model.User
 
 @Composable
 fun ChatContent(
-    chats: LazyPagingItems<Message>,
+//    chats: LazyPagingItems<Message>,
+    chats: List<Message>,
     currentUser: User,
     chatUser: User
 ) {
-    val result = handlePagingResult(chats = chats)
-    Log.d("chatContentDebug","MainContent")
-    Log.d("chatContentDebug",chats.loadState.toString())
-    Log.d("chatContentDebug",result.toString())
+//    val result = handlePagingResult(chats = chats)
+//    Log.d("chatContentDebug","MainContent")
+//    Log.d("chatContentDebug",chats.loadState.toString())
+//    Log.d("chatContentDebug",result.toString())
 
-    if(result) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
-        ){
-            items(
-                count = chats.itemCount,
-                key = chats.itemKey { it.messageId!! }
-            ){ index ->
-                chats[index]?.let {
-                    Log.d("chatContentDebug",it.author.toString())
-                    Log.d("chatContentDebug",currentUser.name)
-                    if(it.author == currentUser.userId){
-                        it.messageText?.let { it1 ->
-                            ChatItem(
-                                text = it1,
-                                onSendClicked = { /*TODO*/ },
-                                dateTime = it.time
-                            )
-                        } ?: Log.d("chatContentDebug","messageText null")
-                    } else {
-                        it.messageText?.let { it1 ->
-                            OppChatItem(
-                                text = it1,
-                                onSendClicked = { /*TODO*/ },
-                                author = chatUser.name,
-                                profilePhoto = chatUser.profilePhoto,
-                                dateTime = it.time
-                            )
-                        } ?: Log.d("chatContentDebug","messageText null")
-                    }
+//    if(result) {
+//        LazyColumn(
+//            modifier = Modifier.fillMaxSize()
+//        ){
+//            items(
+//                count = chats.itemCount,
+//                key = chats.itemKey { it.messageId!! }
+//            ){ index ->
+//                chats[index]?.let {
+//                    Log.d("chatContentDebug",it.author.toString())
+//                    Log.d("chatContentDebug",currentUser.name)
+//                    if(it.author == currentUser.userId){
+//                        it.messageText?.let { it1 ->
+//                            ChatItem(
+//                                text = it1,
+//                                onSendClicked = { /*TODO*/ },
+//                                dateTime = it.time
+//                            )
+//                        } ?: Log.d("chatContentDebug","messageText null")
+//                    } else {
+//                        it.messageText?.let { it1 ->
+//                            OppChatItem(
+//                                text = it1,
+//                                onSendClicked = { /*TODO*/ },
+//                                author = chatUser.name,
+//                                profilePhoto = chatUser.profilePhoto,
+//                                dateTime = it.time
+//                            )
+//                        } ?: Log.d("chatContentDebug","messageText null")
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        reverseLayout = true
+    ){
+        items(
+            count = chats.size
+        ){ index ->
+            chats[index]?.let {
+                Log.d("chatContentDebug",it.author.toString())
+                Log.d("chatContentDebug",currentUser.name)
+                if(it.author == currentUser.userId){
+                    it.messageText?.let { it1 ->
+                        ChatItem(
+                            text = it1,
+                            onSendClicked = { /*TODO*/ },
+                            dateTime = it.time
+                        )
+                    } ?: Log.d("chatContentDebug","messageText null")
+                } else {
+                    it.messageText?.let { it1 ->
+                        OppChatItem(
+                            text = it1,
+                            onSendClicked = { /*TODO*/ },
+                            author = chatUser.name,
+                            profilePhoto = chatUser.profilePhoto,
+                            dateTime = it.time
+                        )
+                    } ?: Log.d("chatContentDebug","messageText null")
                 }
             }
         }
