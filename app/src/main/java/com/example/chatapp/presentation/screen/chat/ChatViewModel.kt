@@ -119,12 +119,23 @@ class ChatViewModel @Inject constructor(
 //        }
 //    }
 
-    fun sendMessage(
-        currentUser: User?
-    ) {
+    fun sendMessage(currentUser: User?) {
         viewModelScope.launch {
+            Log.d("debugging","sendMessage: ${chatText.value}")
             if(chatText.value.isNotBlank()) {
-                Log.d("debugging","sendMessage: ${chatText.value}")
+                var isPresent = false
+                currentUser?.list?.forEach{
+                    if(it.userId == chatId.value){
+                        isPresent = true
+                    }
+                }
+                if(currentUser != null && !isPresent){
+                    repository.addUsers(
+                        request = ApiRequest(
+                            userId = chatId.value
+                        )
+                    )
+                }
                 val newList = fetchedChat.value.toMutableList().apply {
                     add(0, Message(
                         author = currentUser?.userId,
@@ -205,18 +216,18 @@ class ChatViewModel @Inject constructor(
         _chatUser.value = repository.getUserInfoById(request = ApiRequest(userId = chatId.value)).user!!
     }
 
-    fun addChat(currentUserId: String) {
-        if(chatText.value.isNotEmpty()) {
-            viewModelScope.launch(Dispatchers.IO) {
-                repository.addChats(request = ApiRequest(
-                    message = Message(
-                        author = currentUserId,
-                        receiver = listOf(chatUser.value.userId),
-                        messageText = chatText.value
-                    )
-                ))
-            }
-        }
-    }
+//    fun addChat(currentUserId: String) {
+//        if(chatText.value.isNotEmpty()) {
+//            viewModelScope.launch(Dispatchers.IO) {
+//                repository.addChats(request = ApiRequest(
+//                    message = Message(
+//                        author = currentUserId,
+//                        receiver = listOf(chatUser.value.userId),
+//                        messageText = chatText.value
+//                    )
+//                ))
+//            }
+//        }
+//    }
 
 }
