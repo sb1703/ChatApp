@@ -1,5 +1,6 @@
 package com.example.chatapp.presentation.screen.main
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +9,7 @@ import androidx.paging.cachedIn
 import com.example.chatapp.domain.model.ApiRequest
 import com.example.chatapp.domain.model.Message
 import com.example.chatapp.domain.model.User
+import com.example.chatapp.domain.model.UserUpdate
 import com.example.chatapp.domain.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +39,7 @@ class MainViewModel @Inject constructor(
 //    private val _currentUser = mutableStateOf(User())
 //    val currentUser = _currentUser
 
-    private val _currentUser = MutableStateFlow<User?>(User())
+    private val _currentUser = MutableStateFlow(User())
     val currentUser = _currentUser.asStateFlow()
 
 //    private val _lastMessage = mutableStateOf(Message())
@@ -71,13 +73,17 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _currentUser.value = repository.getUserInfo().user!!
         }
+//        _currentUser.value = repository.getUserInfo().user!!
     }
 
-    fun fetchUsers(){
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.fetchUsers().cachedIn(viewModelScope).collect{
-                _fetchedUser.value = it
-            }
+    suspend fun fetchUsers(){
+//        viewModelScope.launch(Dispatchers.IO) {
+//            repository.fetchUsers().cachedIn(viewModelScope).collect{
+//                _fetchedUser.value = it
+//            }
+//        }
+        repository.fetchUsers().cachedIn(viewModelScope).collect{
+            _fetchedUser.value = it
         }
     }
 
@@ -105,6 +111,60 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _chatUser.value = repository.getUserInfoById(request = ApiRequest(userId = chatId.value)).user!!
         }
+    }
+
+    suspend fun setOnlineTrue() {
+        Log.d("debugging","SetOnlineTrue")
+//        viewModelScope.launch(Dispatchers.IO) {
+//            currentUser.value?.let {
+//                UserUpdate(
+//                    name = it.name,
+//                    online = true
+//                )
+//            }?.let {
+//                repository.updateUser(
+//                    userUpdate = it
+//                )
+//            }
+//        }
+        currentUser.value?.let {
+            UserUpdate(
+                name = it.name,
+                online = true
+            )
+        }?.let {
+            repository.updateUser(
+                userUpdate = it
+            )
+        }
+        Log.d("debugging","SetOnlineTrueDone!")
+    }
+
+    suspend fun setOnlineFalse() {
+        Log.d("debugging","SetOnlineFalse")
+//        viewModelScope.launch(Dispatchers.IO) {
+//            currentUser.value?.let {
+//                UserUpdate(
+//                    name = it.name,
+//                    online = false
+//                )
+//            }?.let {
+//                repository.updateUser(
+//                    userUpdate = it
+//                )
+//            }
+//        }
+        currentUser.value?.let {
+            UserUpdate(
+                name = it.name,
+                online = false
+            )
+        }?.let {
+            repository.updateUser(
+                userUpdate = it
+            )
+        }
+        Log.d("debugging","SetOnlineFalseDone!")
     }
 
 }

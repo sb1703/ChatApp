@@ -27,8 +27,8 @@ class ProfileViewModel @Inject constructor(
 //    private val _currentUser = mutableStateOf(User())
 //    val currentUser = _currentUser
 
-    private val _currentUser = MutableStateFlow(User())
-    val currentUser = _currentUser.asStateFlow()
+//    private val _currentUser = MutableStateFlow(User())
+//    val currentUser = _currentUser.asStateFlow()
 
 //    private val _isReadOnly = mutableStateOf(true)
 //    val isReadOnly = _isReadOnly
@@ -49,11 +49,11 @@ class ProfileViewModel @Inject constructor(
         _isReadOnly.value = !_isReadOnly.value
     }
 
-    fun getCurrentUser() {
-        viewModelScope.launch(Dispatchers.IO) {
-            _currentUser.value = repository.getUserInfo().user!!
-        }
-    }
+//    fun getCurrentUser() {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            _currentUser.value = repository.getUserInfo().user!!
+//        }
+//    }
 
     fun updateUser() {
         if(!isReadOnly.value && nameQuery.value.isNotEmpty()) {

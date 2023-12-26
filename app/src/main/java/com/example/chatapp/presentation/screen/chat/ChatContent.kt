@@ -48,6 +48,7 @@ fun ChatContent(
 //    chats: LazyPagingItems<Message>,
     chats: List<Message>,
     currentUser: User,
+    currentUserId: String,
     chatUser: User
 ) {
 //    val result = handlePagingResult(chats = chats)
@@ -89,7 +90,9 @@ fun ChatContent(
 //            }
 //        }
 //    }
-
+//    Log.d("debugging",chats.isEmpty().toString())
+    Log.d("debugging",chats.size.toString())
+    Log.d("debugging",chats.toString())
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         reverseLayout = true
@@ -98,18 +101,21 @@ fun ChatContent(
             count = chats.size
         ){ index ->
             chats[index]?.let {
-                Log.d("chatContentDebug",it.author.toString())
-                Log.d("chatContentDebug",currentUser.name)
-                if(it.author == currentUser.userId){
+                Log.d("debugging","author: ${it.author.toString()}")
+//                Log.d("chatContentDebug","currentUser_name: ${currentUser.name}")
+                Log.d("debugging","currentUser_userId: $currentUserId")
+                if(it.author == currentUserId){
                     it.messageText?.let { it1 ->
+                        Log.d("debugging","ChatItem")
                         ChatItem(
                             text = it1,
                             onSendClicked = { /*TODO*/ },
                             dateTime = it.time
                         )
-                    } ?: Log.d("chatContentDebug","messageText null")
+                    } ?: Log.d("debugging","messageText null")
                 } else {
                     it.messageText?.let { it1 ->
+                        Log.d("debugging","OppChatItem")
                         OppChatItem(
                             text = it1,
                             onSendClicked = { /*TODO*/ },
@@ -117,7 +123,7 @@ fun ChatContent(
                             profilePhoto = chatUser.profilePhoto,
                             dateTime = it.time
                         )
-                    } ?: Log.d("chatContentDebug","messageText null")
+                    } ?: Log.d("debugging","messageText null")
                 }
             }
         }

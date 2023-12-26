@@ -43,17 +43,43 @@ class ChatViewModel @Inject constructor(
     private val _chatText = MutableStateFlow("")
     val chatText = _chatText.asStateFlow()
 
-    fun connectToChat() {
-        getChatIdArgument()
-        viewModelScope.launch(Dispatchers.Main) {
-            getUserInfoByUserId()
-        }
+//    private val _currentUser = MutableStateFlow<User?>(User())
+//    val currentUser = _currentUser.asStateFlow()
+
+//    init {
+//        getChatIdArgument()
+//        viewModelScope.launch(Dispatchers.Default) {
+//            getCurrentUser()
+//            getUserInfoByUserId()
+//            fetchChats()
+//        }
+//        connectToChat()
+//        Log.d("debugging","currentUser: ${currentUser.value?.userId}")
+//        Log.d("debugging","chatId: ${chatId.value}")
+//        Log.d("debugging","chatUser: ${chatUser.value.name}")
+//        Log.d("debugging","fetchedChats: ${fetchedChat.value.size}")
+//    }
+
+    fun connectToChat(
+        currentUser: User?
+    ) {
+        Log.d("debugging","connected to chat")
+        Log.d("debugging","currentUser: ${currentUser?.userId}")
+        Log.d("debugging","chatId: ${chatId.value}")
+        Log.d("debugging","chatUser: ${chatUser.value.name}")
+        Log.d("debugging","fetchedChats: ${fetchedChat.value.size}")
+//        viewModelScope.launch(Dispatchers.Main) {
+//            getUserInfoByUserId()
+//            fetchChats()
+//        }
         viewModelScope.launch {
-            val result = chatSocketService.initSession(listOf(chatId.value))
+            Log.d("debugging","senderUserId: ${currentUser?.userId} && receiver: ${chatId.value}")
+            val result = currentUser?.userId?.let { chatSocketService.initSession(it,listOf(chatId.value)) }
             when(result) {
                 is RequestState.Success -> {
+                    Log.d("debugging","result is success")
                     chatSocketService.observeMessage()
-                        .onEach { message ->  
+                        .onEach { message ->
                             val newList = fetchedChat.value.toMutableList().apply {
                                 add(0,message)
                             }
@@ -61,16 +87,27 @@ class ChatViewModel @Inject constructor(
                         }.launchIn(viewModelScope)
                 }
                 is RequestState.Error -> {
-
+                    Log.d("debugging","result is error")
                 }
                 else -> {
-
+                    Log.d("debugging","result is else")
                 }
             }
         }
     }
 
+//    suspend fun getCurrentUser() {
+////        viewModelScope.launch(Dispatchers.IO) {
+////            Log.d("debugging","getCurrentUser: ${repository.getUserInfo().user}")
+////            _currentUser.value = repository.getUserInfo().user!!
+////        }
+//        Log.d("chatContentDebug","getCurrentUser: ${repository.getUserInfo().user}")
+//        _currentUser.value = repository.getUserInfo().user!!
+//        Log.d("chatContentDebug","getCurrentUserDone!: ${currentUser.value?.name}")
+//    }
+
     fun disconnect() {
+        Log.d("debugging","disconnect fn")
         viewModelScope.launch {
             chatSocketService.closeSession()
         }
@@ -82,9 +119,20 @@ class ChatViewModel @Inject constructor(
 //        }
 //    }
 
-    fun sendMessage() {
+    fun sendMessage(
+        currentUser: User?
+    ) {
         viewModelScope.launch {
             if(chatText.value.isNotBlank()) {
+                Log.d("debugging","sendMessage: ${chatText.value}")
+                val newList = fetchedChat.value.toMutableList().apply {
+                    add(0, Message(
+                        author = currentUser?.userId,
+                        messageText = chatText.value,
+                        receiver = listOf(chatId.value)
+                    ))
+                }
+                _fetchedChat.value = newList
                 chatSocketService.sendMessage(chatText.value)
             }
         }
@@ -92,18 +140,23 @@ class ChatViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
+        Log.d("debugging","disconnected")
         disconnect()
     }
 
     fun updateChatText(query: String) {
+        Log.d("debugging","updating")
         _chatText.value = query
+        Log.d("debugging","updated: ${chatText.value}")
     }
 
     fun clearChatText() {
+        Log.d("debugging","clear Text")
         _chatText.value = ""
     }
 
     fun getChatIdArgument() {
+        Log.d("debugging","getChatIdArgument")
         _chatId.value = savedStateHandle.get<String> (
             key = CHAT_USER_ID
         ).toString()
@@ -122,21 +175,34 @@ class ChatViewModel @Inject constructor(
 //        }
 //    }
 
-    fun fetchChats(){
+    suspend fun fetchChats(){
         Log.d("chatContentDebug",chatId.value)
-        viewModelScope.launch(Dispatchers.IO) {
-            _fetchedChat.value = repository.fetchChats(
-                request = ApiRequest(
-                    userId = chatId.value
-                )
-            ).listMessages
-        }
+//        viewModelScope.launch(Dispatchers.IO) {
+//            Log.d("debugging","fetchedChats")
+//            _fetchedChat.value = repository.fetchChats(
+//                request = ApiRequest(
+//                    userId = chatId.value
+//                )
+//            ).listMessages
+//            Log.d("debugging","fetchedChats: ${_fetchedChat.value.size}")
+//        }
+        Log.d("debugging","fetchedChats")
+        _fetchedChat.value = repository.fetchChats(
+            request = ApiRequest(
+                userId = chatId.value
+            )
+        ).listMessages.reversed()
+        Log.d("debugging","fetchedChats: ${_fetchedChat.value.size}")
+        Log.d("debugging","fetchedChats: ${_fetchedChat.value.toString()}")
     }
 
-    fun getUserInfoByUserId() {
-        viewModelScope.launch(Dispatchers.IO) {
-            _chatUser.value = repository.getUserInfoById(request = ApiRequest(userId = chatId.value)).user!!
-        }
+    suspend fun getUserInfoByUserId() {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            Log.d("debugging","getChatUser: ${repository.getUserInfoById(request = ApiRequest(userId = chatId.value)).user}")
+//            _chatUser.value = repository.getUserInfoById(request = ApiRequest(userId = chatId.value)).user!!
+//        }
+        Log.d("debugging","getChatUser: ${repository.getUserInfoById(request = ApiRequest(userId = chatId.value)).user}")
+        _chatUser.value = repository.getUserInfoById(request = ApiRequest(userId = chatId.value)).user!!
     }
 
     fun addChat(currentUserId: String) {

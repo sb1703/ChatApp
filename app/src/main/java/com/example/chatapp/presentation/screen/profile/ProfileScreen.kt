@@ -21,13 +21,13 @@ fun ProfileScreen(
     mainViewModel: MainViewModel
 ) {
 
-    LaunchedEffect(key1 = true) {
-        Log.d("profileDebug","getCurrentUser()")
-        profileViewModel.getCurrentUser()
-    }
+//    LaunchedEffect(key1 = true) {
+//        Log.d("profileDebug","getCurrentUser()")
+//        profileViewModel.getCurrentUser()
+//    }
 
     val nameQuery = profileViewModel.nameQuery.collectAsState()
-    val currentUser = profileViewModel.currentUser.collectAsState()
+    val currentUser = mainViewModel.currentUser.collectAsState()
     val isReadOnly = profileViewModel.isReadOnly.collectAsState()
 
     LaunchedEffect(key1 = true) {

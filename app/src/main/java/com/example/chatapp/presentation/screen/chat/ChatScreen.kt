@@ -17,6 +17,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavHostController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.chatapp.presentation.screen.main.MainViewModel
+import kotlinx.coroutines.Dispatchers
 
 @Composable
 fun ChatScreen(
@@ -25,49 +26,62 @@ fun ChatScreen(
     chatViewModel: ChatViewModel = hiltViewModel()
 ) {
 
-//    LaunchedEffect(key1 = true) {
-//        chatViewModel.getChatIdArgument()
-//        chatViewModel.getUserInfoByUserId()
-//        chatViewModel.fetchChats()
-//    }
+    val currentUser by mainViewModel.currentUser.collectAsState()
 
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(key1 = lifecycleOwner) {
-        val observer = LifecycleEventObserver { _ , event ->
-            if(event == Lifecycle.Event.ON_START){
-                chatViewModel.connectToChat()
-            } else if(event == Lifecycle.Event.ON_STOP){
-                chatViewModel.disconnect()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+    LaunchedEffect(key1 = true) {
+        chatViewModel.getChatIdArgument()
+//        chatViewModel.getCurrentUser(c)
+        chatViewModel.getUserInfoByUserId()
+        chatViewModel.fetchChats()
+        chatViewModel.connectToChat(currentUser)
     }
 
-    val currentUser by mainViewModel.currentUser.collectAsState()
+//    val lifecycleOwner = LocalLifecycleOwner.current
+//    DisposableEffect(key1 = lifecycleOwner) {
+//        val observer = LifecycleEventObserver { _ , event ->
+//            if(event == Lifecycle.Event.ON_START){
+//                chatViewModel.connectToChat()
+//            } else if(event == Lifecycle.Event.ON_STOP){
+//                chatViewModel.disconnect()
+//            }
+//        }
+//        lifecycleOwner.lifecycle.addObserver(observer)
+//        onDispose {
+//            lifecycleOwner.lifecycle.removeObserver(observer)
+//        }
+//    }
+
+//    val currentUser by mainViewModel.currentUser.collectAsState()
     val chatUser by chatViewModel.chatUser.collectAsState()
 //    val chats = chatViewModel.fetchedChat.collectAsLazyPagingItems()
     val chatText by chatViewModel.chatText.collectAsState()
     val chats by chatViewModel.fetchedChat.collectAsState()
+
+    Log.d("debugging","ChatScreenCurrentUser: ${currentUser?.userId}")
 
     Scaffold(
         topBar = {
             ChatTopBar(
                 onBackStackClicked = {
                     navController.popBackStack()
+                    chatViewModel.disconnect()
                 },
                 name = chatUser.name,
-                profilePicture = chatUser.profilePhoto
+                profilePicture = chatUser.profilePhoto,
+                online = chatUser.online
             )
         },
         content = { paddingValue ->
             Surface(
                 modifier = Modifier.padding(paddingValue)
             ) {
-                currentUser?.let { ChatContent(chats = chats, currentUser = it, chatUser = chatUser) }
-                    ?: Log.d("chatContentDebug","currentUser is null")
+                currentUser?.let { ChatContent(
+                    chats = chats,
+                    currentUser = it,
+                    chatUser = chatUser,
+                    currentUserId = it.userId.toString()
+                ) }
+                    ?: Log.d("debugging","currentUser is null")
             }
         },
         bottomBar = {
@@ -75,7 +89,8 @@ fun ChatScreen(
                 text = chatText,
                 onTextChange = { chatViewModel.updateChatText(it) },
                 onSendClicked = {
-                    mainViewModel.currentUser.value?.userId?.let { chatViewModel.addChat(it) }
+//                    mainViewModel.currentUser.value?.userId?.let { chatViewModel.addChat(it) }
+                    chatViewModel.sendMessage(currentUser)
                     chatViewModel.clearChatText()
                 }
             )
